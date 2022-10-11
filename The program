@@ -1,0 +1,492 @@
+//By lzx
+import java.util.EnumMap;
+import java.util.Scanner;
+
+public class Banksystem {
+    //数组定义
+    enum ExpertOpKey {
+        eokAdd,
+        eokDel
+    }
+    //main
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        double moneyRemain = 0;//金钱剩余
+        String moneyRemainS; //为了object转换创建的string
+        boolean system = true;//为主程序循环创建的boolean变量
+        EnumMap<ExpertOpKey, Object> map = new EnumMap<ExpertOpKey, Object>(ExpertOpKey.class); //数组
+        System.out.println("*******************");
+        System.out.println("Create your account");
+        String accountRestore = registerAccount();//call账户注册method/返回注册的账号并且储存（String）
+        String passwordRestore = registerPassword();//call密码注册method/返回注册的密码并且储存（String）
+        String firstnameRestore = infFirstName();//call姓method/返回姓并且储存（String）
+        String lastnameRestore = infLastName();//call名method/返回名并且储存（String）
+        String genderRestore = gender();//call性别method/返回性别并且储存（String）
+        String numberRestore = infNumber();//call电话号method/返回电话号并且储存（String）
+        String locateRestore = infPlace();//call住址method/返回住址并且储存（String）
+        Object moneyRemainO = map.get(ExpertOpKey.eokAdd);//为了转换创建的object
+        Object passwordRestoreO = map.get(ExpertOpKey.eokDel);//为了转换创建的object
+        //若以上注册部分执行完毕，执行一下输出代表注册成功
+        System.out.println("*******************");
+        System.out.println("Registered");
+        System.out.println("*******************");
+        //注册成功后进入主要部分（系统部分）
+        for(;;) {
+            //提示语
+            System.out.println("*******************");
+            System.out.println("Type login to login");
+            System.out.println("*******************");
+            System.out.println("Type quit to quit");
+            System.out.println("*******************");
+            //获取输入
+            String login = input.next();
+            //判断用户输入
+            //ps：compareto是字符串中的对比
+            if(login.compareTo("login") == 0) {
+                //如果用户输入login则进入login后的部分
+                //defineLog是登陆并且验证method，具体可以去看defineLogin method
+                boolean defineLOG = false;
+                        defineLOG = defineLogin(accountRestore, passwordRestore);//传输变量账号和密码（String）
+                //如果返回值是true，那么进入主系统，如果是false那么就会跳过进入主系统的部分
+                if(defineLOG) {
+                    //这部分是数组转换，为了让menuchoice返回多个值创建的object数组
+                    //menuChoice就是菜单与菜单选择和大部分功能的集合体
+                    //传输大部分变量，具体可以自己看
+                    //返回map数组（moneyRemain和passwordRestore）需要返回这两个是因为这两个是唯一的变动值
+                    map = menuChoice(system, defineLOG, accountRestore, firstnameRestore, lastnameRestore, genderRestore, numberRestore, locateRestore, moneyRemain, passwordRestore);
+                    //object转换string和double的部分，过于深奥，我自己都有点蒙
+                    moneyRemainO = map.get(ExpertOpKey.eokDel);
+                    moneyRemainS = moneyRemainO.toString();
+                    moneyRemain = Double.parseDouble(moneyRemainS);
+                    //更新剩余金额
+                    //System.out.println(moneyRemain);
+                    passwordRestoreO = map.get(ExpertOpKey.eokAdd);
+                    //System.out.println(passwordRestoreO);
+                    passwordRestore = String.valueOf(passwordRestoreO);
+                    //更新密码
+                    //以下是为了判断返回值是否为null值，目前已经解决
+                    if(passwordRestore.compareTo("null") == 0){
+                        System.out.println("password null");
+                    }
+                }else{
+                    //如果登陆失败（if那里面为false）那么输出以下
+                    System.out.println("*******************");
+                    System.out.println("Failed login!");
+                    System.out.println("*******************");
+                    System.out.println("Please try again");
+                    System.out.println("*******************");
+                }
+            }else if(login.compareTo("quit") == 0){
+                //如果最外层的if判断输入的不是login，而是quit，则退出大循环，结束程序
+                break;
+            }else{
+                //如果最外层的if判断既不是login或者quit，那么返回error，重新请求
+                System.out.println("*******************");
+                System.out.println("error");
+                System.out.println("*******************");
+            }
+        }
+        //我水印
+        System.out.println("*******************");
+        System.out.println("Designed by lzx");
+        System.out.println("*******************");
+    }
+    //主菜单程序
+    public static EnumMap<ExpertOpKey, Object> menuChoice(boolean system, boolean defineLOG, String accountRestore, String firstnameRestore, String lastnameRestore, String genderRestore, String numberRestore, String locateRestore, Double moneyRemain, String passwordRestore){
+        Scanner input = new Scanner(System.in);
+        EnumMap<ExpertOpKey, Object> map = new EnumMap<ExpertOpKey, Object>(ExpertOpKey.class);
+        int choiceMenu = 0;
+        boolean statementMenu = false;
+        //for循环中的各个菜单内容都可以去看对应都method
+        for( ; ; ) {
+            moneyRemain = menu(moneyRemain);//运行主menu程序（主菜单）并且传输剩余金额，并且更新金额剩余。具体返回值目前没用。
+            int choice = input.nextInt();//获取用户选择的子菜单
+            //判断选择的是哪个子菜单
+            if(choice == 1){
+                statementMenu = menuOne(accountRestore, firstnameRestore, lastnameRestore, genderRestore, numberRestore, locateRestore);
+                //这个for是为了从子菜单运行完后仍然留在那个子菜单界面，然后当用户输入back的时候才会返回主菜单。其他的都同理
+                for(;;){
+                    System.out.println("*******************");
+                    System.out.println("Type back to back to menu");
+                    System.out.println("*******************");
+                    String back = input.next();
+                    System.out.println("*******************");
+                    if(back.compareTo("back") == 0){
+                        break;
+                    }
+                }
+            }else if(choice == 2){
+                moneyRemain = menuTwo(moneyRemain);
+                map.put(ExpertOpKey.eokDel, moneyRemain);
+                for(;;){
+                    System.out.println("*******************");
+                    System.out.println("Type back to back to menu");
+                    System.out.println("*******************");
+                    String back = input.next();
+                    System.out.println("*******************");
+                    if(back.compareTo("back") == 0){
+                        break;
+                    }
+                }
+            }else if(choice == 3){
+                moneyRemain = menuThree(moneyRemain);
+                map.put(ExpertOpKey.eokDel, moneyRemain);
+
+                for(;;){
+                    System.out.println("*******************");
+                    System.out.println("Type back to back to menu");
+                    System.out.println("*******************");
+                    String back = input.next();
+                    System.out.println("*******************");
+                    if(back.compareTo("back") == 0){
+                        break;
+                    }
+                }
+            }else if(choice == 4){
+                int choiceFour = menuFour();
+                if(choiceFour == 1) {
+                    passwordRestore = passwordChange(passwordRestore, accountRestore, defineLOG);
+                    map.put(ExpertOpKey.eokAdd, passwordRestore);
+
+                }else if(choiceFour == 2){
+                    break;
+                }
+                for(;;){
+                    System.out.println("*******************");
+                    System.out.println("Type back to back to menu");
+                    System.out.println("*******************");
+                    String back = input.next();
+                    System.out.println("*******************");
+                    if(back.compareTo("back") == 0){
+                        break;
+                    }
+                }
+            }else if(choice == 5){
+               break;
+            }else{
+                System.out.println("*******************");
+                System.out.println("error");
+                System.out.println("*******************");
+            }
+
+
+        }
+        return map;
+    }
+    //主菜单图形
+    public static Double menu(Double moneyRemain){
+        //很简单，就输出个菜单。加金额剩余
+        System.out.println("*******************");
+        System.out.println("|Welcome to system|");
+        System.out.println("*******************");
+        System.out.println("|Money: " + moneyRemain + "  |");
+        System.out.println("|1-Info           |");
+        System.out.println("|2-in             |");
+        System.out.println("|3-out            |");
+        System.out.println("|4-account setting|");
+        System.out.println("|5-Logout         |");
+        System.out.println("*******************");
+        return moneyRemain;
+    }
+    //info主体
+    public static Boolean menuOne(String accountRestore, String firstnameRestore, String lastnameRestore, String genderRestore, String numberRestore, String locateRestore){
+        boolean a = true;
+        //传输过来string们，并且输出它们
+        System.out.println("*******************");
+        System.out.println("Account:" + accountRestore);
+        System.out.println("First name:" + firstnameRestore);
+        System.out.println("Last name:" + lastnameRestore);
+        System.out.println("Gender:" + genderRestore);
+        System.out.println("Phone number:" + numberRestore);
+        System.out.println("Locate:" + locateRestore);
+        System.out.println("*******************");
+        return a;
+    }
+    //moneyin主体
+    public static double menuTwo(Double moneyRemain){
+        //存款系统，不多解释。目前来说可以看懂
+        double moneyRemainC = moneyRemain;
+        System.out.println("*******************");
+        System.out.println("Money remain:" + moneyRemain);
+        System.out.println("*******************");
+        System.out.println("Type your in money");
+        moneyRemain = moneyIn(moneyRemain);
+        System.out.println("*******************");
+        if(moneyRemain != moneyRemainC){
+            System.out.println("Success");
+        }
+        return moneyRemain;
+    }
+    //moneyout主体
+    public static Double menuThree(Double moneyRemain){
+        //取款系统，不多解释。目前来说可以看懂
+        double moneyRemainC = moneyRemain;
+        System.out.println("*******************");
+        System.out.println("Money remain:" + moneyRemain);
+        System.out.println("*******************");
+        System.out.println("Type your out money");
+        moneyRemain = moneyOut(moneyRemain);
+        System.out.println("*******************");
+        if(moneyRemain != moneyRemainC){
+            System.out.println("Success");
+        }
+        return moneyRemain;
+    }
+    //setting主体
+    public static Integer menuFour(){
+        Scanner input = new Scanner(System.in);
+        int choice;
+        //
+        for(;;) {
+            //输出选项
+            System.out.println("*******************");
+            System.out.println("|1-Change password|");
+            System.out.println("|2-back           |");
+            System.out.println("*******************");
+            choice = input.nextInt();//获取选项
+            if(choice == 1){
+                break;//如果选择的改密码，返回1
+            }else if(choice == 2){
+                break;//如果选择的back，返回2
+            }else{
+                System.out.println("*******************");
+                System.out.println("Wrong selection");
+                System.out.println("*******************");
+            }
+        }
+        return choice;
+    }
+    //更改密码主体
+    public static String passwordChange(String passwordRestore, String accountRestore, Boolean defineLOG){
+        Scanner input = new Scanner(System.in);
+        //这段比较复杂，自行理解
+        boolean sameP = true;
+        for(;;){
+            defineLOG = defineLogin(accountRestore, passwordRestore);
+            if(defineLOG) {
+                System.out.println("*******************");
+                System.out.println("Enter your new password");
+                String passwordOne = input.next();
+                System.out.println("*******************");
+                System.out.println("Confirm your new password");
+                System.out.println("*******************");
+                String passwordTwo = input.next();
+                System.out.println("*******************");
+                if(passwordOne.compareTo(passwordRestore) == 0){
+                    sameP = false;
+                    System.out.println("Password is same as old");
+                }
+                if (passwordOne.compareTo(passwordTwo) == 0 && defineLOG && sameP) {
+                    System.out.println("Changed successfully");
+                    passwordRestore = passwordOne;
+                    break;
+                } else {
+                    System.out.println("Failed to change");
+                }
+            }else{
+                System.out.println("*******************");
+                System.out.println("Failed to change");
+                System.out.println("*******************");
+                System.out.println("|     1-Retry     |");
+                System.out.println("|     2-quit      |");
+                System.out.println("*******************");
+                int choiceRQ = input.nextInt();
+                if(choiceRQ == 1){
+
+                }else if(choiceRQ == 2){
+                    break;
+                }else{
+                    System.out.println("error");
+                    break;
+                }
+
+            }
+        }
+        return passwordRestore;
+    }
+    //moneyin功能
+    public static Double moneyIn(Double moneyRemain){
+        Scanner input = new Scanner(System.in);
+        moneyRemain += input.nextDouble();
+        return moneyRemain;
+    }
+    //moneyout功能
+    public static Double moneyOut(Double moneyRemain){
+        Scanner input = new Scanner(System.in);
+        double moneyOut = input.nextDouble();
+        if(moneyOut > moneyRemain){
+            System.out.println("*******************");
+            System.out.println("failed to out");
+            System.out.println("*******************");
+        }else{
+            moneyRemain -= moneyOut;
+        }
+
+        return moneyRemain;
+    }
+    //登陆功能
+    public static Boolean defineLogin(String accountRestore, String passwordRestore){
+        //这段比较复杂，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Please enter you account and password");
+        System.out.println("*******************");
+        System.out.println("Account:");
+        String account = input.nextLine();
+        System.out.println("*******************");
+        System.out.println("Password:");
+        String password = input.nextLine();
+        System.out.println("*******************");
+        //以下为确认新密码和老密码是否重复
+        Integer tfA = 0;
+                tfA = accountDefine(account, accountRestore);
+        Integer tfP = 0;
+                tfP = passwordDefine(password, passwordRestore);
+        boolean login = false;
+        if(tfA == 1 && tfP == 1){
+            System.out.println("*******************");
+            System.out.println("Login successful");
+            System.out.println("*******************");
+            login = true;
+        }else{
+            login = false;
+        }
+        return login;
+    }
+
+    //注册账号
+    public static String registerAccount(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Account:");
+        String account = input.nextLine();
+        System.out.println("*******************");
+        return account;
+
+
+    }
+    //注册密码
+    public static String registerPassword(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Password:");
+        String password = input.nextLine();
+        System.out.println("*******************");
+        return password;
+
+
+    }
+    //判断账号正确
+    public static int accountDefine(String account, String accountRestore) {
+        //过于简单，自行理解
+        int tf = 0;
+        if(account.compareTo(accountRestore) == 0){
+            tf = 1;
+        }else{
+            tf = 0;
+            System.out.println("*******************");
+            System.out.println("Account is not registered!");
+            System.out.println("*******************");
+        }
+
+
+        return tf;
+    }
+    //判断密码正确
+    public static int passwordDefine(String password, String passwordRestore) {
+        //过于简单，自行理解
+        int tf = 0;
+        if(password.compareTo(passwordRestore) == 0){
+            tf = 1;
+        }else{
+            tf = 0;
+            System.out.println("*******************");
+            System.out.println("wrong password");
+            System.out.println("*******************");
+        }
+
+
+        return tf;
+    }
+    //infoFirstname获取
+    public static String infFirstName(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Please enter your first name");
+        System.out.println("*******************");
+        String firstName = input.next();
+        System.out.println("*******************");
+        return firstName;
+    }
+    //infolstname获取
+    public static String infLastName(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Please enter your last name");
+        System.out.println("*******************");
+        String lastName = input.next();
+        System.out.println("*******************");
+        return lastName;
+    }
+    //infogender获取
+    public static String gender() {
+        Scanner input = new Scanner(System.in);
+        String gender;
+        for(;;) {
+            System.out.println("*******************");
+            System.out.println("Please chose your gender(Numbers)");
+            System.out.println("1-Man");
+            System.out.println("2-Woman");
+            System.out.println("3-Other");
+            System.out.println("*******************");
+            int num = input.nextInt();
+            System.out.println("*******************");
+            if (num == 1) {
+                gender = "Man";
+                break;
+            } else if (num == 2) {
+                gender = "Woman";
+                break;
+            } else if (num == 3) {
+                gender = "Other";
+                break;
+            } else {
+                //这里如果既不是1也不是2也不是3，那就代表用户输入的不是已给出的选项，所以会输出错误并且不退出循环
+                System.out.println("*******************");
+                System.out.println("error");
+                System.out.println("*******************");
+            }
+
+
+        }
+
+        return gender;
+    }
+    //infonumber获取
+    public static String infNumber(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Please enter you phone number");
+        System.out.println("*******************");
+        String number = input.next();
+        System.out.println("*******************");
+        return number;
+    }
+    //infoplace获取
+    public static String infPlace(){
+        //过于简单，自行理解
+        Scanner input = new Scanner(System.in);
+        System.out.println("*******************");
+        System.out.println("Please enter you locate");
+        System.out.println("*******************");
+        String locate = input.next();
+        System.out.println("*******************");
+        return locate;
+    }
+}
+//没了。
